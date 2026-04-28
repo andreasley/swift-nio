@@ -1063,7 +1063,7 @@ internal enum Posix: Sendable {
 /// `NIOFcntlFailedError` indicates that NIO was unable to perform an
 /// operation on a socket.
 ///
-/// This error should never happen, unfortunately, we have seen this happen on Darwin.
+/// This error should never happen, unfortunately, we have seen this happen on Darwin (e.g. on new sockets if a TCP RST is received by the server before the socket was accepted).
 public struct NIOFcntlFailedError: Error {}
 
 /// `NIOFailedToSetSocketNonBlockingError` indicates that NIO was unable to set a socket to non-blocking mode, either

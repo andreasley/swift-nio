@@ -1217,6 +1217,18 @@ class BaseSocketChannel<SocketType: BaseSocketProtocol>: SelectableChannel, Chan
                         return .eof
                     }
                 }
+            } else if err is NIOFcntlFailedError {
+                // If NIO was unable to perform a fcntl operation on a socket, we have to consider this socket broken.
+                readStreamState = .eof
+                
+                if self.lifecycleManager.isActive {
+                    self.pipeline.syncOperations.fireChannelReadComplete()
+                    if self.shouldCloseOnReadError(err) {
+                        self.close0(error: err, mode: .input, promise: nil)
+                    }
+                    // Do NOT set `self.readPending = false` here; the channel will be stalled/blocked if doing so
+                    return .eof
+                }
             } else {
                 readStreamState = .error
                 self.pipeline.syncOperations.fireErrorCaught(err)
